@@ -4,7 +4,7 @@ spring:
   application:
     name: task-management
   datasource:
-    url: jdbc:h2:mem:tm-db
+    url: jdbc:h2:mem:testdb
     username: sa
     driver-class-name: org.h2.Driver
   jpa:

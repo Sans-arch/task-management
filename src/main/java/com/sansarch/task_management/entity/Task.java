@@ -1,12 +1,13 @@
 package com.sansarch.task_management.entity;
 
 import jakarta.persistence.*;
-import org.springframework.context.annotation.Primary;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
+@Data
 public class Task {
 
     @Id
