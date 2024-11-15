@@ -5,6 +5,7 @@ import com.sansarch.task_management.infra.http.dto.CreateTaskInputDTO;
 import com.sansarch.task_management.domain.service.TaskService;
 import com.sansarch.task_management.infra.http.dto.CreateTaskOutputDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,7 +37,8 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteTask(@PathVariable String id) {
-        return taskService.deleteTask();
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
     }
 }

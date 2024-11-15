@@ -71,7 +71,7 @@ public class TaskService {
         return "Task updated!";
     }
 
-    public String deleteTask() {
-        return "Task deleted!";
+    public void deleteTask(Long id) {
+        taskRepository.deleteById(id);
     }
 }
