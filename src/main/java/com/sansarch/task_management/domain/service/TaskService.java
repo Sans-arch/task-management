@@ -4,6 +4,8 @@ import com.sansarch.task_management.domain.entity.Task;
 import com.sansarch.task_management.domain.exception.TaskNotFoundException;
 import com.sansarch.task_management.infra.http.dto.CreateTaskInputDTO;
 import com.sansarch.task_management.infra.http.dto.CreateTaskOutputDTO;
+import com.sansarch.task_management.infra.http.dto.UpdateTaskInputDTO;
+import com.sansarch.task_management.infra.http.dto.UpdateTaskOutputDTO;
 import com.sansarch.task_management.infra.mapper.TaskMapper;
 import com.sansarch.task_management.infra.repository.TaskRepository;
 import com.sansarch.task_management.infra.repository.model.TaskModel;
@@ -67,8 +69,31 @@ public class TaskService {
                 .build();
     }
 
-    public String updateTask() {
-        return "Task updated!";
+    public UpdateTaskOutputDTO updateTask(Long id, UpdateTaskInputDTO input) {
+        Optional<TaskModel> taskModel = taskRepository.findById(id);
+
+        if (taskModel.isEmpty()) {
+            throw new TaskNotFoundException("Task not found!");
+        }
+
+        Task task = taskMapper.toDomain(taskModel.get());
+        task.changeTitle(input.getTitle());
+        task.changeDescription(input.getDescription());
+        if (input.isCompleted()) {
+            task.markAsComplete();
+        } else {
+            task.markAsIncomplete();
+        }
+
+        taskRepository.save(taskMapper.toModel(task));
+
+        return UpdateTaskOutputDTO.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .description(task.getDescription())
+                .isCompleted(task.isCompleted())
+                .dueDate(task.getDueDate())
+                .build();
     }
 
     public void deleteTask(Long id) {

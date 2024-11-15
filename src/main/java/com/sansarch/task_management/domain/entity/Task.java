@@ -15,4 +15,20 @@ public class Task {
     private String description;
     private boolean isCompleted;
     private LocalDateTime dueDate;
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeDescription(String description) {
+        this.description = description;
+    }
+
+    public void markAsComplete() {
+        this.isCompleted = true;
+    }
+
+    public void markAsIncomplete() {
+        this.isCompleted = false;
+    }
 }

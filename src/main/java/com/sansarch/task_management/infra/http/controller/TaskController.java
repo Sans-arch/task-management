@@ -1,9 +1,11 @@
 package com.sansarch.task_management.infra.http.controller;
 
 import com.sansarch.task_management.domain.entity.Task;
-import com.sansarch.task_management.infra.http.dto.CreateTaskInputDTO;
 import com.sansarch.task_management.domain.service.TaskService;
+import com.sansarch.task_management.infra.http.dto.CreateTaskInputDTO;
 import com.sansarch.task_management.infra.http.dto.CreateTaskOutputDTO;
+import com.sansarch.task_management.infra.http.dto.UpdateTaskInputDTO;
+import com.sansarch.task_management.infra.http.dto.UpdateTaskOutputDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +34,8 @@ public class TaskController {
     }
 
     @PutMapping(value = "/{id}")
-    public String updateTask(@PathVariable String id) {
-        return taskService.updateTask();
+    public UpdateTaskOutputDTO updateTask(@PathVariable Long id, @RequestBody UpdateTaskInputDTO input) {
+        return taskService.updateTask(id, input);
     }
 
     @DeleteMapping("/{id}")
