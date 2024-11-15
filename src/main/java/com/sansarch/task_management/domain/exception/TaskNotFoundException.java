@@ -1,4 +1,4 @@
-package com.sansarch.task_management.exception;
+package com.sansarch.task_management.domain.exception;
 
 public class TaskNotFoundException extends RuntimeException {
     public TaskNotFoundException(String message) {

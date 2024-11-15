@@ -1,4 +1,4 @@
-package com.sansarch.task_management.http.config;
+package com.sansarch.task_management.infra.http.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

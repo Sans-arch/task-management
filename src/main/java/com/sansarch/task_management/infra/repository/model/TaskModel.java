@@ -1,14 +1,20 @@
-package com.sansarch.task_management.entity;
+package com.sansarch.task_management.infra.repository.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
-@Data
-public class Task {
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class TaskModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

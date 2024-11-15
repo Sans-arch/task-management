@@ -1,7 +1,9 @@
-package com.sansarch.task_management.http.controller;
+package com.sansarch.task_management.infra.http.controller;
 
-import com.sansarch.task_management.entity.Task;
-import com.sansarch.task_management.service.TaskService;
+import com.sansarch.task_management.domain.entity.Task;
+import com.sansarch.task_management.infra.http.dto.CreateTaskInputDTO;
+import com.sansarch.task_management.domain.service.TaskService;
+import com.sansarch.task_management.infra.http.dto.CreateTaskOutputDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,8 +26,8 @@ public class TaskController {
     }
 
     @PostMapping
-    public Object createTask() {
-        return taskService.createTask();
+    public CreateTaskOutputDTO createTask(@RequestBody CreateTaskInputDTO input) {
+        return taskService.createTask(input);
     }
 
     @PutMapping(value = "/{id}")
