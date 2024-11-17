@@ -20,6 +20,8 @@ A simple Java application built with Spring Boot for managing tasks. The applica
 - **Spring Data JPA**
 - **MySQL** (or H2 for development)
 - **Postman** (for API testing)
+- **Docker** (for containerization)
+- **Docker Compose** (for multi-container deployment)
 
 ---
 
@@ -29,7 +31,8 @@ A simple Java application built with Spring Boot for managing tasks. The applica
 
 - Java 17+
 - Maven
-- MySQL (optional: H2 for in-memory database)
+- Docker (for containerization)
+- Docker Compose (for multi-container deployment)
 
 ### Installation
 
