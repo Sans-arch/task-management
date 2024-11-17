@@ -22,6 +22,7 @@ A simple Java application built with Spring Boot for managing tasks. The applica
 - **Postman** (for API testing)
 - **Docker** (for containerization)
 - **Docker Compose** (for multi-container deployment)
+- **Swagger** (for API documentation)
 
 ---
 
