@@ -25,7 +25,9 @@ A simple Java application built with Spring Boot for managing tasks. The applica
 
 ---
 
-## Getting Started
+# Documentation
+
+The API documentation is available at [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) after starting the application.
 
 ### Prerequisites
 
