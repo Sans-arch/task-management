@@ -18,7 +18,7 @@ A simple Java application built with Spring Boot for managing tasks. The applica
 - **Java**
 - **Spring Boot**
 - **Spring Data JPA**
-- **MySQL** (or H2 for development)
+- **Postgres** (or H2 for development)
 - **Postman** (for API testing)
 - **Docker** (for containerization)
 - **Docker Compose** (for multi-container deployment)
