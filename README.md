@@ -29,7 +29,7 @@ A simple Java application built with Spring Boot for managing tasks. The applica
 
 ### Prerequisites
 
-- Java 17+
+- Java 21+
 - Maven
 - Docker (for containerization)
 - Docker Compose (for multi-container deployment)
