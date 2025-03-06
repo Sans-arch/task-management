@@ -1,6 +1,6 @@
 package com.sansarch.task_management.infra.mapper;
 
-import com.sansarch.task_management.domain.entity.Task;
+import com.sansarch.task_management.domain.task.entity.Task;
 import com.sansarch.task_management.infra.repository.model.TaskModel;
 import org.springframework.stereotype.Component;
 

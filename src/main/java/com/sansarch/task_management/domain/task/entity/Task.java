@@ -1,4 +1,4 @@
-package com.sansarch.task_management.domain.entity;
+package com.sansarch.task_management.domain.task.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

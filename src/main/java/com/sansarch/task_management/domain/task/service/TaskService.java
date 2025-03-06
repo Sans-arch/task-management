@@ -1,7 +1,7 @@
-package com.sansarch.task_management.domain.service;
+package com.sansarch.task_management.domain.task.service;
 
-import com.sansarch.task_management.domain.entity.Task;
-import com.sansarch.task_management.domain.exception.TaskNotFoundException;
+import com.sansarch.task_management.domain.task.entity.Task;
+import com.sansarch.task_management.domain.task.exception.TaskNotFoundException;
 import com.sansarch.task_management.infra.http.dto.CreateTaskInputDTO;
 import com.sansarch.task_management.infra.http.dto.CreateTaskOutputDTO;
 import com.sansarch.task_management.infra.http.dto.UpdateTaskInputDTO;

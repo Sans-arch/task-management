@@ -8,16 +8,17 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
 @Entity
 @Table(name = "tasks")
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class TaskModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @Column(nullable = false, length = 50)
@@ -29,6 +30,6 @@ public class TaskModel {
     @Column(name = "completed", nullable = false)
     private boolean isCompleted;
 
-    @Column(nullable = false)
+    @Column(name = "due_date", nullable = false)
     private LocalDateTime dueDate;
 }

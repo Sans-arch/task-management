@@ -1,7 +1,7 @@
 package com.sansarch.task_management.infra.http.controller;
 
-import com.sansarch.task_management.domain.entity.Task;
-import com.sansarch.task_management.domain.service.TaskService;
+import com.sansarch.task_management.domain.task.entity.Task;
+import com.sansarch.task_management.domain.task.service.TaskService;
 import com.sansarch.task_management.infra.http.dto.CreateTaskInputDTO;
 import com.sansarch.task_management.infra.http.dto.CreateTaskOutputDTO;
 import com.sansarch.task_management.infra.http.dto.UpdateTaskInputDTO;
@@ -18,7 +18,7 @@ import java.util.List;
 public class TaskController {
     private final TaskService taskService;
 
-    @GetMapping(value = "/list")
+    @GetMapping
     public List<Task> listTasks() {
         return taskService.listTasks();
     }
