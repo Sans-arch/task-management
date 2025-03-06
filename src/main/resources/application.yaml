@@ -1,16 +1,14 @@
 spring:
   application:
     name: task-management
-  profiles:
-    active: h2
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: sa
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
   jpa:
+    # Disable Hibernate automatic schema generation because we are using Flyway
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
   h2:
     console:
