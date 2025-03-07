@@ -1,7 +1,9 @@
 package com.sansarch.task_management.infra.http.authentication.controller;
 
 import com.sansarch.task_management.infra.http.authentication.dto.AuthenticationDTO;
+import com.sansarch.task_management.infra.http.authentication.dto.LoginResponseDTO;
 import com.sansarch.task_management.infra.http.authentication.dto.RegistrationDTO;
+import com.sansarch.task_management.infra.http.authentication.service.TokenService;
 import com.sansarch.task_management.infra.repository.UserRepository;
 import com.sansarch.task_management.infra.repository.model.UserModel;
 import jakarta.validation.Valid;
@@ -25,15 +27,18 @@ public class AuthenticationController {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
-    private GenericResponseService responseBuilder;
+    private TokenService tokenService;
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Valid AuthenticationDTO dto) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid AuthenticationDTO dto) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(dto.login(), dto.password());
         var auth = authenticationManager.authenticate(usernamePassword);
 
-        return ResponseEntity.ok().build();
+        var token = tokenService.generateToken((UserModel) auth.getPrincipal());
+
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")

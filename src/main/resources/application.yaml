@@ -6,10 +6,14 @@ spring:
     username: postgres
     password: postgres
   jpa:
-    # Disable Hibernate automatic schema generation because we are using Flyway
     hibernate:
-      ddl-auto: none
+      ddl-auto: none # Disable Hibernate automatic schema generation because we are using Flyway
     show-sql: true
   h2:
     console:
       enabled: true
+
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:my-secret-key}
