@@ -1,4 +1,4 @@
-package com.sansarch.task_management.infra.service;
+package com.sansarch.task_management.infra.http.authentication.service;
 
 import com.sansarch.task_management.infra.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class AuthorizationService implements UserDetailsService {
+public class AuthenticationService implements UserDetailsService {
 
     private UserRepository userRepository;
 

@@ -1,19 +1,16 @@
-package com.sansarch.task_management.infra.http.dto;
+package com.sansarch.task_management.infra.http.task.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Builder
-@Data
-public class UpdateTaskOutputDTO {
+public class CreateTaskOutputDTO {
     private Long id;
     private String title;
     private String description;
     private LocalDateTime dueDate;
-
-    @JsonProperty("isCompleted")
     private boolean isCompleted;
 }

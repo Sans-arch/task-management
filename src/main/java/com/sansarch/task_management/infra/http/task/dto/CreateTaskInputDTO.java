@@ -1,4 +1,4 @@
-package com.sansarch.task_management.infra.http.dto;
+package com.sansarch.task_management.infra.http.task.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

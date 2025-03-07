@@ -1,11 +1,11 @@
-package com.sansarch.task_management.infra.http.controller;
+package com.sansarch.task_management.infra.http.task.controller;
 
 import com.sansarch.task_management.domain.task.entity.Task;
 import com.sansarch.task_management.domain.task.service.TaskService;
-import com.sansarch.task_management.infra.http.dto.CreateTaskInputDTO;
-import com.sansarch.task_management.infra.http.dto.CreateTaskOutputDTO;
-import com.sansarch.task_management.infra.http.dto.UpdateTaskInputDTO;
-import com.sansarch.task_management.infra.http.dto.UpdateTaskOutputDTO;
+import com.sansarch.task_management.infra.http.task.dto.CreateTaskInputDTO;
+import com.sansarch.task_management.infra.http.task.dto.CreateTaskOutputDTO;
+import com.sansarch.task_management.infra.http.task.dto.UpdateTaskInputDTO;
+import com.sansarch.task_management.infra.http.task.dto.UpdateTaskOutputDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
