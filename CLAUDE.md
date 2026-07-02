@@ -13,6 +13,11 @@ when filling in a stub.
 Note: the intended package name `com.github.sansarch.task-management` is not a valid Java
 identifier, so the codebase uses `com.github.sansarch.task_management` (underscore) instead.
 
+## Git conventions
+
+- Always commit as the configured git user (`Sans-arch`).
+- Never add `Co-Authored-By: Claude` or any other Claude authorship line to commits.
+
 ## Commands
 
 Use the Maven wrapper (`./mvnw`), not a system-installed `mvn`.
@@ -75,6 +80,18 @@ adapters (persistence) implement — never the other way around.
 - Services depend on `port/out` interfaces (e.g. `TaskRepository`), injected via constructor —
   never on a concrete persistence adapter.
 - Not-found lookups throw `TaskNotFoundException`.
+
+## Testing conventions
+
+- Every use case service (`application/task/service/`) must have a corresponding unit test class
+  under `src/test/.../application/task/service/`.
+- Use Mockito to mock `TaskRepository` (and any other ports); never spin up a Spring context for
+  unit tests.
+- Use JUnit 5 + AssertJ: `@Nested` classes grouped by method under test, `@DisplayName` on every
+  class and test method.
+- Never call `LocalDate.now()` or `LocalDateTime.now()` in tests — use fixed constants instead
+  (SonarLint: "Do not use the system clock in tests").
+- Domain entity tests live under `src/test/.../domain/task/model/` (see `TaskTest`).
 
 ## Stack
 
