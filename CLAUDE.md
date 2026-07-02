@@ -41,10 +41,11 @@ under its own top-level package and only depends inward:
 domain/task/
   model/       Task, TaskId, TaskStatus, TaskPriority — no framework dependencies
   exception/   InvalidTaskStateException, TaskNotFoundException (RuntimeException)
+  repository/  TaskRepository — core persistence contract owned by the domain
 
 application/task/
   port/in/     Use case interfaces called by inbound adapters (e.g. UpdateTaskUseCase)
-  port/out/    Repository interfaces implemented by outbound adapters (e.g. TaskRepository)
+  port/out/    TaskGateway — extends TaskRepository, adds application-level queries (findAll)
   service/     Use case implementations (@Service), e.g. UpdateTaskService implements UpdateTaskUseCase
   dto/         Commands/Results/Filters crossing the application boundary (e.g. UpdateTaskCommand, TaskResult)
 
@@ -70,6 +71,18 @@ adapters (persistence) implement — never the other way around.
   `Task` is by id only.
 - `updatedAt` is refreshed on every mutation; `validate()` also enforces `updatedAt` is never
   before `createdAt`.
+
+### Repository and gateway conventions
+
+The persistence contract is split across two layers:
+
+- **`domain/task/repository/TaskRepository`** — owned by the domain. Defines only the core
+  persistence operations the domain needs: `findById`, `save`, `delete`. No application DTOs.
+- **`application/task/port/out/TaskGateway`** — output port owned by the application layer.
+  Extends `TaskRepository` and adds application-specific queries (e.g. `findAll(TaskFilter)`).
+  All services depend on `TaskGateway`, never on `TaskRepository` directly.
+- **`infrastructure/.../TaskRepositoryAdapter`** — implements `TaskGateway` (and transitively
+  `TaskRepository`). Never referenced by domain or application code.
 
 ### Application layer conventions
 
