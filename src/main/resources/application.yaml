@@ -1,3 +1,6 @@
 spring:
   application:
     name: task-management
+  jackson:
+    datetime:
+      write-dates-as-timestamps: false
