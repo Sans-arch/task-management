@@ -1,7 +1,7 @@
 package com.github.sansarch.task_management.application.task.service;
 
 import com.github.sansarch.task_management.application.task.port.in.DeleteTaskUseCase;
-import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
 import org.springframework.stereotype.Service;
@@ -11,9 +11,9 @@ import java.util.UUID;
 @Service
 public class DeleteTaskService implements DeleteTaskUseCase {
 
-    private final TaskDomainRepository taskDomainRepository;
+    private final TaskGateway taskDomainRepository;
 
-    public DeleteTaskService(TaskDomainRepository taskDomainRepository) {
+    public DeleteTaskService(TaskGateway taskDomainRepository) {
         this.taskDomainRepository = taskDomainRepository;
     }
 

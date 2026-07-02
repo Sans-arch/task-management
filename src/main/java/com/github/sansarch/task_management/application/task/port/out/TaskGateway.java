@@ -2,14 +2,10 @@ package com.github.sansarch.task_management.application.task.port.out;
 
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
 import com.github.sansarch.task_management.domain.task.model.Task;
-import com.github.sansarch.task_management.domain.task.model.TaskId;
+import com.github.sansarch.task_management.domain.task.repository.TaskRepository;
 
 import java.util.List;
-import java.util.Optional;
 
-public interface TaskDomainRepository {
-    Optional<Task> findById(TaskId id);
+public interface TaskGateway extends TaskRepository {
     List<Task> findAll(TaskFilter filter);
-    Task save(Task task);
-    void delete(TaskId id);
 }

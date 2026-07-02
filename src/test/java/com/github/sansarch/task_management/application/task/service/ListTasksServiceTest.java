@@ -2,7 +2,7 @@ package com.github.sansarch.task_management.application.task.service;
 
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
-import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
 import com.github.sansarch.task_management.domain.task.model.TaskPriority;
@@ -30,7 +30,7 @@ class ListTasksServiceTest {
     private static final LocalDateTime FIXED_DATETIME = LocalDateTime.of(2025, Month.JANUARY, 1, 10, 0, 0);
 
     @Mock
-    private TaskDomainRepository taskDomainRepository;
+    private TaskGateway taskDomainRepository;
 
     @InjectMocks
     private ListTasksService listTasksService;

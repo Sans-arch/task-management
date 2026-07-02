@@ -3,7 +3,7 @@ package com.github.sansarch.task_management.application.task.service;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
 import com.github.sansarch.task_management.application.task.dto.UpdateTaskCommand;
 import com.github.sansarch.task_management.application.task.port.in.UpdateTaskUseCase;
-import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class UpdateTaskService implements UpdateTaskUseCase {
 
-    private final TaskDomainRepository taskDomainRepository;
+    private final TaskGateway taskDomainRepository;
 
-    public UpdateTaskService(TaskDomainRepository taskDomainRepository) {
+    public UpdateTaskService(TaskGateway taskDomainRepository) {
         this.taskDomainRepository = taskDomainRepository;
     }
 

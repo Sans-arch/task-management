@@ -1,7 +1,7 @@
 package com.github.sansarch.task_management.infrastructure.task.adapter.out.persistence;
 
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
-import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class TaskRepositoryAdapter implements TaskDomainRepository {
+public class TaskRepositoryAdapter implements TaskGateway {
 
     private final SpringDataTaskRepository springDataTaskRepository;
     private final TaskMapper taskMapper;

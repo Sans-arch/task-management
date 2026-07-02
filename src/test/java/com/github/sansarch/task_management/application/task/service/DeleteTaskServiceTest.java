@@ -1,6 +1,6 @@
 package com.github.sansarch.task_management.application.task.service;
 
-import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
@@ -29,7 +29,7 @@ class DeleteTaskServiceTest {
     private static final LocalDateTime FIXED_DATETIME = LocalDateTime.of(2025, Month.JANUARY, 1, 10, 0, 0);
 
     @Mock
-    private TaskDomainRepository taskDomainRepository;
+    private TaskGateway taskDomainRepository;
 
     @InjectMocks
     private DeleteTaskService deleteTaskService;

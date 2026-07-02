@@ -2,7 +2,7 @@ package com.github.sansarch.task_management.application.task.service;
 
 import com.github.sansarch.task_management.application.task.dto.CreateTaskCommand;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
-import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
 import com.github.sansarch.task_management.domain.task.exception.InvalidTaskStateException;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskPriority;
@@ -31,7 +31,7 @@ class CreateTaskServiceTest {
     private static final LocalDate FIXED_DATE = LocalDate.of(2025, Month.JANUARY, 8);
 
     @Mock
-    private TaskDomainRepository taskDomainRepository;
+    private TaskGateway taskDomainRepository;
 
     @InjectMocks
     private CreateTaskService createTaskService;
