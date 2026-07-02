@@ -7,7 +7,7 @@ import com.github.sansarch.task_management.domain.task.model.TaskId;
 import java.util.List;
 import java.util.Optional;
 
-public interface TaskRepository {
+public interface TaskDomainRepository {
     Optional<Task> findById(TaskId id);
     List<Task> findAll(TaskFilter filter);
     Task save(Task task);

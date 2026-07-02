@@ -3,7 +3,7 @@ package com.github.sansarch.task_management.application.task.service;
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
 import com.github.sansarch.task_management.application.task.port.in.ListTasksUseCase;
-import com.github.sansarch.task_management.application.task.port.out.TaskRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,15 +11,15 @@ import java.util.List;
 @Service
 public class ListTasksService implements ListTasksUseCase {
 
-    private final TaskRepository taskRepository;
+    private final TaskDomainRepository taskDomainRepository;
 
-    public ListTasksService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public ListTasksService(TaskDomainRepository taskDomainRepository) {
+        this.taskDomainRepository = taskDomainRepository;
     }
 
     @Override
     public List<TaskResult> list(TaskFilter filter) {
-        return taskRepository.findAll(filter).stream()
+        return taskDomainRepository.findAll(filter).stream()
                 .map(task -> new TaskResult(
                         task.getId().id(),
                         task.getTitle(),

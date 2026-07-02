@@ -2,7 +2,7 @@ package com.github.sansarch.task_management.application.task.service;
 
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
-import com.github.sansarch.task_management.application.task.port.out.TaskRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
 import com.github.sansarch.task_management.domain.task.model.TaskPriority;
@@ -30,7 +30,7 @@ class ListTasksServiceTest {
     private static final LocalDateTime FIXED_DATETIME = LocalDateTime.of(2025, Month.JANUARY, 1, 10, 0, 0);
 
     @Mock
-    private TaskRepository taskRepository;
+    private TaskDomainRepository taskDomainRepository;
 
     @InjectMocks
     private ListTasksService listTasksService;
@@ -45,7 +45,7 @@ class ListTasksServiceTest {
             TaskFilter filter = new TaskFilter(null, null);
             Task task1 = Task.reconstitute(TaskId.generate(), "Task 1", null, TaskStatus.TODO, TaskPriority.LOW, null, FIXED_DATETIME, FIXED_DATETIME);
             Task task2 = Task.reconstitute(TaskId.generate(), "Task 2", null, TaskStatus.IN_PROGRESS, TaskPriority.HIGH, null, FIXED_DATETIME, FIXED_DATETIME);
-            when(taskRepository.findAll(filter)).thenReturn(java.util.List.of(task1, task2));
+            when(taskDomainRepository.findAll(filter)).thenReturn(java.util.List.of(task1, task2));
 
             List<TaskResult> results = listTasksService.list(filter);
 
@@ -58,7 +58,7 @@ class ListTasksServiceTest {
         @DisplayName("should return an empty list when no tasks match the filter")
         void shouldReturnEmptyListWhenNoTasksFound() {
             TaskFilter filter = new TaskFilter(TaskStatus.DONE, null);
-            when(taskRepository.findAll(filter)).thenReturn(java.util.List.of());
+            when(taskDomainRepository.findAll(filter)).thenReturn(java.util.List.of());
 
             List<TaskResult> results = listTasksService.list(filter);
 
@@ -71,7 +71,7 @@ class ListTasksServiceTest {
             TaskFilter filter = new TaskFilter(null, null);
             TaskId id = TaskId.generate();
             Task task = Task.reconstitute(id, "Fix bug", "Desc", TaskStatus.TODO, TaskPriority.MEDIUM, null, FIXED_DATETIME, FIXED_DATETIME);
-            when(taskRepository.findAll(filter)).thenReturn(java.util.List.of(task));
+            when(taskDomainRepository.findAll(filter)).thenReturn(java.util.List.of(task));
 
             TaskResult result = listTasksService.list(filter).get(0);
 
@@ -88,11 +88,11 @@ class ListTasksServiceTest {
         @DisplayName("should pass the filter to the repository")
         void shouldPassFilterToRepository() {
             TaskFilter filter = new TaskFilter(TaskStatus.TODO, TaskPriority.HIGH);
-            when(taskRepository.findAll(filter)).thenReturn(java.util.List.of());
+            when(taskDomainRepository.findAll(filter)).thenReturn(java.util.List.of());
 
             listTasksService.list(filter);
 
-            verify(taskRepository).findAll(filter);
+            verify(taskDomainRepository).findAll(filter);
         }
     }
 }

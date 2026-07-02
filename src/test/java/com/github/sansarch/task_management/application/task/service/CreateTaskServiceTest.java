@@ -2,7 +2,7 @@ package com.github.sansarch.task_management.application.task.service;
 
 import com.github.sansarch.task_management.application.task.dto.CreateTaskCommand;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
-import com.github.sansarch.task_management.application.task.port.out.TaskRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
 import com.github.sansarch.task_management.domain.task.exception.InvalidTaskStateException;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskPriority;
@@ -31,7 +31,7 @@ class CreateTaskServiceTest {
     private static final LocalDate FIXED_DATE = LocalDate.of(2025, Month.JANUARY, 8);
 
     @Mock
-    private TaskRepository taskRepository;
+    private TaskDomainRepository taskDomainRepository;
 
     @InjectMocks
     private CreateTaskService createTaskService;
@@ -43,7 +43,7 @@ class CreateTaskServiceTest {
         @Test
         @DisplayName("should return a TaskResult with the correct fields")
         void shouldReturnTaskResultWithCorrectFields() {
-            when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(taskDomainRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
             CreateTaskCommand command = new CreateTaskCommand(
                     "Fix bug", "Some description", TaskStatus.TODO, TaskPriority.MEDIUM, FIXED_DATE);
 
@@ -59,7 +59,7 @@ class CreateTaskServiceTest {
         @Test
         @DisplayName("should generate a non-null id")
         void shouldGenerateNonNullId() {
-            when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(taskDomainRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
             CreateTaskCommand command = new CreateTaskCommand(
                     "Fix bug", null, TaskStatus.TODO, TaskPriority.LOW, null);
 
@@ -71,13 +71,13 @@ class CreateTaskServiceTest {
         @Test
         @DisplayName("should save the task via the repository")
         void shouldSaveTaskViaRepository() {
-            when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(taskDomainRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
             CreateTaskCommand command = new CreateTaskCommand(
                     "Fix bug", null, TaskStatus.TODO, TaskPriority.LOW, null);
 
             createTaskService.create(command);
 
-            verify(taskRepository).save(any(Task.class));
+            verify(taskDomainRepository).save(any(Task.class));
         }
 
         @Test

@@ -1,6 +1,6 @@
 package com.github.sansarch.task_management.application.task.service;
 
-import com.github.sansarch.task_management.application.task.port.out.TaskRepository;
+import com.github.sansarch.task_management.application.task.port.out.TaskDomainRepository;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
@@ -29,7 +29,7 @@ class DeleteTaskServiceTest {
     private static final LocalDateTime FIXED_DATETIME = LocalDateTime.of(2025, Month.JANUARY, 1, 10, 0, 0);
 
     @Mock
-    private TaskRepository taskRepository;
+    private TaskDomainRepository taskDomainRepository;
 
     @InjectMocks
     private DeleteTaskService deleteTaskService;
@@ -43,18 +43,18 @@ class DeleteTaskServiceTest {
         void shouldDeleteTaskWhenItExists() {
             TaskId taskId = TaskId.generate();
             Task task = Task.reconstitute(taskId, "Title", null, TaskStatus.TODO, TaskPriority.LOW, null, FIXED_DATETIME, FIXED_DATETIME);
-            when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+            when(taskDomainRepository.findById(taskId)).thenReturn(Optional.of(task));
 
             deleteTaskService.delete(taskId.id());
 
-            verify(taskRepository).delete(taskId);
+            verify(taskDomainRepository).delete(taskId);
         }
 
         @Test
         @DisplayName("should throw TaskNotFoundException when task does not exist")
         void shouldThrowWhenTaskNotFound() {
             UUID id = UUID.randomUUID();
-            when(taskRepository.findById(new TaskId(id))).thenReturn(Optional.empty());
+            when(taskDomainRepository.findById(new TaskId(id))).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> deleteTaskService.delete(id))
                     .isInstanceOf(TaskNotFoundException.class)
@@ -65,14 +65,14 @@ class DeleteTaskServiceTest {
         @DisplayName("should not call delete when task is not found")
         void shouldNotCallDeleteWhenTaskNotFound() {
             UUID id = UUID.randomUUID();
-            when(taskRepository.findById(new TaskId(id))).thenReturn(Optional.empty());
+            when(taskDomainRepository.findById(new TaskId(id))).thenReturn(Optional.empty());
 
             try {
                 deleteTaskService.delete(id);
             } catch (TaskNotFoundException ignored) {
             }
 
-            verify(taskRepository, never()).delete(any());
+            verify(taskDomainRepository, never()).delete(any());
         }
     }
 }
