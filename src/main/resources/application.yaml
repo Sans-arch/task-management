@@ -4,3 +4,6 @@ spring:
   jackson:
     datetime:
       write-dates-as-timestamps: false
+  jpa:
+    hibernate:
+      ddl-auto: validate
