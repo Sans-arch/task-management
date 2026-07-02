@@ -82,26 +82,27 @@ IN_PROGRESS → DONE  (via PATCH /complete)
 ### Prerequisites
 
 - Java 21
-- Docker (used by Testcontainers during tests)
-- A running PostgreSQL instance (for the application itself)
-
-### Configuration
-
-Set the following environment variables (or override them in `application.yaml`):
-
-```
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/task_management
-SPRING_DATASOURCE_USERNAME=your_user
-SPRING_DATASOURCE_PASSWORD=your_password
-```
+- Docker
 
 ### Start the application
 
 ```bash
+# Start PostgreSQL
+docker compose up -d
+
+# Run the application
 ./mvnw spring-boot:run
 ```
 
 Flyway runs automatically on startup and applies any pending migrations from `src/main/resources/db/migration/`.
+
+The default datasource in `application.yaml` points to the Compose database (`localhost:5432/task_management`). Override with environment variables if you use a different instance:
+
+```
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/task_management
+SPRING_DATASOURCE_USERNAME=task_user
+SPRING_DATASOURCE_PASSWORD=task_password
+```
 
 ## Running tests
 

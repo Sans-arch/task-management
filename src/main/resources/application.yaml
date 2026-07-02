@@ -1,6 +1,10 @@
 spring:
   application:
     name: task-management
+  datasource:
+    url: jdbc:postgresql://localhost:5432/task_management
+    username: task_user
+    password: task_password
   jackson:
     datetime:
       write-dates-as-timestamps: false
