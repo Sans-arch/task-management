@@ -3,9 +3,11 @@ package com.github.sansarch.task_management.infrastructure.task.adapter.in.web;
 import com.github.sansarch.task_management.application.task.dto.CreateTaskCommand;
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
 import com.github.sansarch.task_management.application.task.dto.UpdateTaskCommand;
+import com.github.sansarch.task_management.application.task.port.in.CompleteTaskUseCase;
 import com.github.sansarch.task_management.application.task.port.in.CreateTaskUseCase;
 import com.github.sansarch.task_management.application.task.port.in.DeleteTaskUseCase;
 import com.github.sansarch.task_management.application.task.port.in.ListTasksUseCase;
+import com.github.sansarch.task_management.application.task.port.in.MarkTaskInProgressUseCase;
 import com.github.sansarch.task_management.application.task.port.in.UpdateTaskUseCase;
 import com.github.sansarch.task_management.domain.task.model.TaskPriority;
 import com.github.sansarch.task_management.domain.task.model.TaskStatus;
@@ -26,13 +28,18 @@ public class TaskController {
     private final UpdateTaskUseCase updateTaskUseCase;
     private final DeleteTaskUseCase deleteTaskUseCase;
     private final ListTasksUseCase listTasksUseCase;
+    private final MarkTaskInProgressUseCase markTaskInProgressUseCase;
+    private final CompleteTaskUseCase completeTaskUseCase;
 
     public TaskController(CreateTaskUseCase createTaskUseCase, UpdateTaskUseCase updateTaskUseCase,
-                          DeleteTaskUseCase deleteTaskUseCase, ListTasksUseCase listTasksUseCase) {
+                          DeleteTaskUseCase deleteTaskUseCase, ListTasksUseCase listTasksUseCase,
+                          MarkTaskInProgressUseCase markTaskInProgressUseCase, CompleteTaskUseCase completeTaskUseCase) {
         this.createTaskUseCase = createTaskUseCase;
         this.updateTaskUseCase = updateTaskUseCase;
         this.deleteTaskUseCase = deleteTaskUseCase;
         this.listTasksUseCase = listTasksUseCase;
+        this.markTaskInProgressUseCase = markTaskInProgressUseCase;
+        this.completeTaskUseCase = completeTaskUseCase;
     }
 
     @PostMapping
@@ -71,5 +78,15 @@ public class TaskController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {
         deleteTaskUseCase.delete(id);
+    }
+
+    @PatchMapping("/{id}/start")
+    public TaskResponse markInProgress(@PathVariable UUID id) {
+        return TaskResponse.from(markTaskInProgressUseCase.markInProgress(id));
+    }
+
+    @PatchMapping("/{id}/complete")
+    public TaskResponse complete(@PathVariable UUID id) {
+        return TaskResponse.from(completeTaskUseCase.complete(id));
     }
 }
