@@ -1,7 +1,11 @@
 package com.github.sansarch.task_management.application.task.service;
 
+import com.github.sansarch.task_management.application.shared.dto.PageResult;
+import com.github.sansarch.task_management.application.task.dto.SortDirection;
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
+import com.github.sansarch.task_management.application.task.dto.TaskPageRequest;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
+import com.github.sansarch.task_management.application.task.dto.TaskSortField;
 import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
@@ -28,6 +32,7 @@ import static org.mockito.Mockito.when;
 class ListTasksServiceTest {
 
     private static final LocalDateTime FIXED_DATETIME = LocalDateTime.of(2025, Month.JANUARY, 1, 10, 0, 0);
+    private static final TaskPageRequest DEFAULT_PAGE_REQUEST = new TaskPageRequest(0, 20, TaskSortField.CREATED_AT, SortDirection.DESC);
 
     @Mock
     private TaskGateway taskDomainRepository;
@@ -45,9 +50,10 @@ class ListTasksServiceTest {
             TaskFilter filter = new TaskFilter(null, null);
             Task task1 = Task.reconstitute(TaskId.generate(), "Task 1", null, TaskStatus.TODO, TaskPriority.LOW, null, FIXED_DATETIME, FIXED_DATETIME);
             Task task2 = Task.reconstitute(TaskId.generate(), "Task 2", null, TaskStatus.IN_PROGRESS, TaskPriority.HIGH, null, FIXED_DATETIME, FIXED_DATETIME);
-            when(taskDomainRepository.findAll(filter)).thenReturn(java.util.List.of(task1, task2));
+            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST))
+                    .thenReturn(new PageResult<>(List.of(task1, task2), 0, 20, 2, 1));
 
-            List<TaskResult> results = listTasksService.list(filter);
+            List<TaskResult> results = listTasksService.list(filter, DEFAULT_PAGE_REQUEST).content();
 
             assertThat(results).hasSize(2);
             assertThat(results.get(0).title()).isEqualTo("Task 1");
@@ -55,14 +61,17 @@ class ListTasksServiceTest {
         }
 
         @Test
-        @DisplayName("should return an empty list when no tasks match the filter")
-        void shouldReturnEmptyListWhenNoTasksFound() {
+        @DisplayName("should return an empty page when no tasks match the filter")
+        void shouldReturnEmptyPageWhenNoTasksFound() {
             TaskFilter filter = new TaskFilter(TaskStatus.DONE, null);
-            when(taskDomainRepository.findAll(filter)).thenReturn(java.util.List.of());
+            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST))
+                    .thenReturn(new PageResult<>(List.of(), 0, 20, 0, 0));
 
-            List<TaskResult> results = listTasksService.list(filter);
+            PageResult<TaskResult> result = listTasksService.list(filter, DEFAULT_PAGE_REQUEST);
 
-            assertThat(results).isEmpty();
+            assertThat(result.content()).isEmpty();
+            assertThat(result.totalElements()).isZero();
+            assertThat(result.totalPages()).isZero();
         }
 
         @Test
@@ -71,9 +80,10 @@ class ListTasksServiceTest {
             TaskFilter filter = new TaskFilter(null, null);
             TaskId id = TaskId.generate();
             Task task = Task.reconstitute(id, "Fix bug", "Desc", TaskStatus.TODO, TaskPriority.MEDIUM, null, FIXED_DATETIME, FIXED_DATETIME);
-            when(taskDomainRepository.findAll(filter)).thenReturn(java.util.List.of(task));
+            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST))
+                    .thenReturn(new PageResult<>(List.of(task), 0, 20, 1, 1));
 
-            TaskResult result = listTasksService.list(filter).get(0);
+            TaskResult result = listTasksService.list(filter, DEFAULT_PAGE_REQUEST).content().get(0);
 
             assertThat(result.id()).isEqualTo(id.id());
             assertThat(result.title()).isEqualTo("Fix bug");
@@ -85,14 +95,32 @@ class ListTasksServiceTest {
         }
 
         @Test
-        @DisplayName("should pass the filter to the repository")
-        void shouldPassFilterToRepository() {
+        @DisplayName("should preserve the pagination metadata from the repository")
+        void shouldPreservePaginationMetadata() {
+            TaskFilter filter = new TaskFilter(null, null);
+            TaskPageRequest pageRequest = new TaskPageRequest(1, 10, TaskSortField.TITLE, SortDirection.ASC);
+            Task task = Task.reconstitute(TaskId.generate(), "Task", null, TaskStatus.TODO, TaskPriority.LOW, null, FIXED_DATETIME, FIXED_DATETIME);
+            when(taskDomainRepository.findAll(filter, pageRequest))
+                    .thenReturn(new PageResult<>(List.of(task), 1, 10, 25, 3));
+
+            PageResult<TaskResult> result = listTasksService.list(filter, pageRequest);
+
+            assertThat(result.page()).isEqualTo(1);
+            assertThat(result.size()).isEqualTo(10);
+            assertThat(result.totalElements()).isEqualTo(25);
+            assertThat(result.totalPages()).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("should pass the filter and page request to the repository")
+        void shouldPassFilterAndPageRequestToRepository() {
             TaskFilter filter = new TaskFilter(TaskStatus.TODO, TaskPriority.HIGH);
-            when(taskDomainRepository.findAll(filter)).thenReturn(java.util.List.of());
+            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST))
+                    .thenReturn(new PageResult<>(List.of(), 0, 20, 0, 0));
 
-            listTasksService.list(filter);
+            listTasksService.list(filter, DEFAULT_PAGE_REQUEST);
 
-            verify(taskDomainRepository).findAll(filter);
+            verify(taskDomainRepository).findAll(filter, DEFAULT_PAGE_REQUEST);
         }
     }
 }

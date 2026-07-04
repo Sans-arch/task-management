@@ -1,7 +1,12 @@
 package com.github.sansarch.task_management.infrastructure.task.adapter.in.web;
 
+import com.github.sansarch.task_management.application.shared.dto.PageResult;
 import com.github.sansarch.task_management.application.task.dto.CreateTaskCommand;
+import com.github.sansarch.task_management.application.task.dto.SortDirection;
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
+import com.github.sansarch.task_management.application.task.dto.TaskPageRequest;
+import com.github.sansarch.task_management.application.task.dto.TaskResult;
+import com.github.sansarch.task_management.application.task.dto.TaskSortField;
 import com.github.sansarch.task_management.application.task.dto.UpdateTaskCommand;
 import com.github.sansarch.task_management.application.task.port.in.CompleteTaskUseCase;
 import com.github.sansarch.task_management.application.task.port.in.CreateTaskUseCase;
@@ -11,21 +16,25 @@ import com.github.sansarch.task_management.application.task.port.in.MarkTaskInPr
 import com.github.sansarch.task_management.application.task.port.in.UpdateTaskUseCase;
 import com.github.sansarch.task_management.domain.task.model.TaskPriority;
 import com.github.sansarch.task_management.domain.task.model.TaskStatus;
+import com.github.sansarch.task_management.infrastructure.shared.web.response.PageResponse;
 import com.github.sansarch.task_management.infrastructure.task.adapter.in.web.request.TaskRequest;
 import com.github.sansarch.task_management.infrastructure.task.adapter.in.web.response.TaskResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Tasks", description = "Task management operations")
 @RestController
 @RequestMapping("/api/tasks")
+@Validated
 public class TaskController {
 
     private final CreateTaskUseCase createTaskUseCase;
@@ -61,15 +70,21 @@ public class TaskController {
         )));
     }
 
-    @Operation(summary = "List tasks", description = "Returns all tasks, optionally filtered by status and/or priority")
+    @Operation(summary = "List tasks", description = "Returns a paginated list of tasks, optionally filtered by status and/or priority, sorted by the given field and direction")
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
+    @ApiResponse(responseCode = "400", description = "Invalid pagination or sorting parameters")
     @GetMapping
-    public List<TaskResponse> list(@RequestParam(required = false) TaskStatus status,
-                                   @RequestParam(required = false) TaskPriority priority) {
-        return listTasksUseCase.list(new TaskFilter(status, priority))
-                .stream()
-                .map(TaskResponse::from)
-                .toList();
+    public PageResponse<TaskResponse> list(@RequestParam(required = false) TaskStatus status,
+                                           @RequestParam(required = false) TaskPriority priority,
+                                           @RequestParam(defaultValue = "0") @Min(0) int page,
+                                           @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+                                           @RequestParam(defaultValue = "CREATED_AT") TaskSortField sortBy,
+                                           @RequestParam(defaultValue = "DESC") SortDirection sortDirection) {
+        PageResult<TaskResult> result = listTasksUseCase.list(
+                new TaskFilter(status, priority),
+                new TaskPageRequest(page, size, sortBy, sortDirection)
+        );
+        return PageResponse.from(result, TaskResponse::from);
     }
 
     @Operation(summary = "Update a task")

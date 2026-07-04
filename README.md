@@ -30,7 +30,7 @@ The persistence contract is split across two layers: `TaskRepository` (domain-ow
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/tasks` | Create a task |
-| `GET` | `/api/tasks` | List tasks (optional `?status=` and `?priority=` filters) |
+| `GET` | `/api/tasks` | List tasks, paginated (optional `?status=`, `?priority=`, `?page=`, `?size=`, `?sortBy=`, `?sortDirection=`) |
 | `PUT` | `/api/tasks/{id}` | Update a task |
 | `DELETE` | `/api/tasks/{id}` | Delete a task |
 | `PATCH` | `/api/tasks/{id}/start` | Mark a task as in progress |
@@ -41,6 +41,27 @@ The persistence contract is split across two layers: `TaskRepository` (domain-ow
 
 ### Task priority values
 `LOW` · `MEDIUM` · `HIGH`
+
+### Pagination and sorting
+
+`GET /api/tasks` returns a page of results:
+
+| Param | Default | Notes |
+|-------|---------|-------|
+| `page` | `0` | Zero-based page index |
+| `size` | `20` | Max `100` |
+| `sortBy` | `CREATED_AT` | One of `TITLE`, `STATUS`, `PRIORITY`, `DUE_DATE`, `CREATED_AT`, `UPDATED_AT` |
+| `sortDirection` | `DESC` | `ASC` or `DESC` |
+
+```json
+{
+  "content": [ { "id": "...", "title": "...", "...": "..." } ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 42,
+  "totalPages": 3
+}
+```
 
 ### State transitions
 

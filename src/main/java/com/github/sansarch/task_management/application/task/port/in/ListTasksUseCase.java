@@ -1,10 +1,10 @@
 package com.github.sansarch.task_management.application.task.port.in;
 
+import com.github.sansarch.task_management.application.shared.dto.PageResult;
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
+import com.github.sansarch.task_management.application.task.dto.TaskPageRequest;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
 
-import java.util.List;
-
 public interface ListTasksUseCase {
-    List<TaskResult> list(TaskFilter filter);
+    PageResult<TaskResult> list(TaskFilter filter, TaskPageRequest pageRequest);
 }

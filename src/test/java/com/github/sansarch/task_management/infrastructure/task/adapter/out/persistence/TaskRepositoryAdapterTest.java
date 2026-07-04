@@ -1,6 +1,10 @@
 package com.github.sansarch.task_management.infrastructure.task.adapter.out.persistence;
 
+import com.github.sansarch.task_management.application.shared.dto.PageResult;
+import com.github.sansarch.task_management.application.task.dto.SortDirection;
 import com.github.sansarch.task_management.application.task.dto.TaskFilter;
+import com.github.sansarch.task_management.application.task.dto.TaskPageRequest;
+import com.github.sansarch.task_management.application.task.dto.TaskSortField;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
 import com.github.sansarch.task_management.domain.task.model.TaskPriority;
@@ -19,7 +23,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +42,7 @@ class TaskRepositoryAdapterTest {
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17-alpine");
 
     private static final LocalDate FIXED_DATE = LocalDate.of(2025, Month.JANUARY, 8);
+    private static final TaskPageRequest DEFAULT_PAGE_REQUEST = new TaskPageRequest(0, 20, TaskSortField.CREATED_AT, SortDirection.DESC);
 
     @Autowired
     private TaskRepositoryAdapter taskRepositoryAdapter;
@@ -99,9 +103,10 @@ class TaskRepositoryAdapterTest {
             taskRepositoryAdapter.save(Task.create("Task 1", null, TaskStatus.TODO, TaskPriority.LOW, null));
             taskRepositoryAdapter.save(Task.create("Task 2", null, TaskStatus.DONE, TaskPriority.HIGH, null));
 
-            List<Task> result = taskRepositoryAdapter.findAll(new TaskFilter(null, null));
+            PageResult<Task> result = taskRepositoryAdapter.findAll(new TaskFilter(null, null), DEFAULT_PAGE_REQUEST);
 
-            assertThat(result).hasSize(2);
+            assertThat(result.content()).hasSize(2);
+            assertThat(result.totalElements()).isEqualTo(2);
         }
 
         @Test
@@ -110,10 +115,10 @@ class TaskRepositoryAdapterTest {
             taskRepositoryAdapter.save(Task.create("Todo task", null, TaskStatus.TODO, TaskPriority.LOW, null));
             taskRepositoryAdapter.save(Task.create("Done task", null, TaskStatus.DONE, TaskPriority.LOW, null));
 
-            List<Task> result = taskRepositoryAdapter.findAll(new TaskFilter(TaskStatus.TODO, null));
+            PageResult<Task> result = taskRepositoryAdapter.findAll(new TaskFilter(TaskStatus.TODO, null), DEFAULT_PAGE_REQUEST);
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getStatus()).isEqualTo(TaskStatus.TODO);
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).getStatus()).isEqualTo(TaskStatus.TODO);
         }
 
         @Test
@@ -122,10 +127,10 @@ class TaskRepositoryAdapterTest {
             taskRepositoryAdapter.save(Task.create("High task", null, TaskStatus.TODO, TaskPriority.HIGH, null));
             taskRepositoryAdapter.save(Task.create("Low task", null, TaskStatus.TODO, TaskPriority.LOW, null));
 
-            List<Task> result = taskRepositoryAdapter.findAll(new TaskFilter(null, TaskPriority.HIGH));
+            PageResult<Task> result = taskRepositoryAdapter.findAll(new TaskFilter(null, TaskPriority.HIGH), DEFAULT_PAGE_REQUEST);
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getPriority()).isEqualTo(TaskPriority.HIGH);
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).getPriority()).isEqualTo(TaskPriority.HIGH);
         }
 
         @Test
@@ -135,10 +140,50 @@ class TaskRepositoryAdapterTest {
             taskRepositoryAdapter.save(Task.create("Wrong status", null, TaskStatus.DONE, TaskPriority.HIGH, null));
             taskRepositoryAdapter.save(Task.create("Wrong priority", null, TaskStatus.TODO, TaskPriority.LOW, null));
 
-            List<Task> result = taskRepositoryAdapter.findAll(new TaskFilter(TaskStatus.TODO, TaskPriority.HIGH));
+            PageResult<Task> result = taskRepositoryAdapter.findAll(new TaskFilter(TaskStatus.TODO, TaskPriority.HIGH), DEFAULT_PAGE_REQUEST);
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getTitle()).isEqualTo("Match");
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).getTitle()).isEqualTo("Match");
+        }
+
+        @Test
+        @DisplayName("should return only the requested page slice, with correct pagination metadata")
+        void shouldPaginateResults() {
+            taskRepositoryAdapter.save(Task.create("Task A", null, TaskStatus.TODO, TaskPriority.LOW, null));
+            taskRepositoryAdapter.save(Task.create("Task B", null, TaskStatus.TODO, TaskPriority.LOW, null));
+            taskRepositoryAdapter.save(Task.create("Task C", null, TaskStatus.TODO, TaskPriority.LOW, null));
+
+            TaskPageRequest firstPage = new TaskPageRequest(0, 2, TaskSortField.TITLE, SortDirection.ASC);
+            PageResult<Task> firstResult = taskRepositoryAdapter.findAll(new TaskFilter(null, null), firstPage);
+
+            assertThat(firstResult.content()).extracting(Task::getTitle).containsExactly("Task A", "Task B");
+            assertThat(firstResult.page()).isEqualTo(0);
+            assertThat(firstResult.size()).isEqualTo(2);
+            assertThat(firstResult.totalElements()).isEqualTo(3);
+            assertThat(firstResult.totalPages()).isEqualTo(2);
+
+            TaskPageRequest secondPage = new TaskPageRequest(1, 2, TaskSortField.TITLE, SortDirection.ASC);
+            PageResult<Task> secondResult = taskRepositoryAdapter.findAll(new TaskFilter(null, null), secondPage);
+
+            assertThat(secondResult.content()).extracting(Task::getTitle).containsExactly("Task C");
+        }
+
+        @Test
+        @DisplayName("should sort tasks by the requested field and direction")
+        void shouldSortResults() {
+            taskRepositoryAdapter.save(Task.create("Zebra", null, TaskStatus.TODO, TaskPriority.LOW, null));
+            taskRepositoryAdapter.save(Task.create("Apple", null, TaskStatus.TODO, TaskPriority.LOW, null));
+            taskRepositoryAdapter.save(Task.create("Mango", null, TaskStatus.TODO, TaskPriority.LOW, null));
+
+            TaskPageRequest ascByTitle = new TaskPageRequest(0, 10, TaskSortField.TITLE, SortDirection.ASC);
+            PageResult<Task> ascResult = taskRepositoryAdapter.findAll(new TaskFilter(null, null), ascByTitle);
+
+            assertThat(ascResult.content()).extracting(Task::getTitle).containsExactly("Apple", "Mango", "Zebra");
+
+            TaskPageRequest descByTitle = new TaskPageRequest(0, 10, TaskSortField.TITLE, SortDirection.DESC);
+            PageResult<Task> descResult = taskRepositoryAdapter.findAll(new TaskFilter(null, null), descByTitle);
+
+            assertThat(descResult.content()).extracting(Task::getTitle).containsExactly("Zebra", "Mango", "Apple");
         }
     }
 

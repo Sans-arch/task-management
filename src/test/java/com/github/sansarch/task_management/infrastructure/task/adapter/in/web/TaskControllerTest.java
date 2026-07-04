@@ -1,6 +1,7 @@
 package com.github.sansarch.task_management.infrastructure.task.adapter.in.web;
 
 import tools.jackson.databind.ObjectMapper;
+import com.github.sansarch.task_management.application.shared.dto.PageResult;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
 import com.github.sansarch.task_management.application.task.port.in.CompleteTaskUseCase;
 import com.github.sansarch.task_management.application.task.port.in.CreateTaskUseCase;
@@ -146,36 +147,85 @@ class TaskControllerTest {
     class ListTasks {
 
         @Test
-        @DisplayName("should return 200 with list of tasks")
+        @DisplayName("should return 200 with a page of tasks")
         void shouldReturn200WithList() throws Exception {
-            when(listTasksUseCase.list(any())).thenReturn(List.of(sampleResult(TaskStatus.TODO)));
+            when(listTasksUseCase.list(any(), any()))
+                    .thenReturn(new PageResult<>(List.of(sampleResult(TaskStatus.TODO)), 0, 20, 1, 1));
 
             mockMvc.perform(get("/api/tasks"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.length()").value(1))
-                    .andExpect(jsonPath("$[0].id").value(TASK_ID.toString()));
+                    .andExpect(jsonPath("$.content.length()").value(1))
+                    .andExpect(jsonPath("$.content[0].id").value(TASK_ID.toString()))
+                    .andExpect(jsonPath("$.page").value(0))
+                    .andExpect(jsonPath("$.size").value(20))
+                    .andExpect(jsonPath("$.totalElements").value(1))
+                    .andExpect(jsonPath("$.totalPages").value(1));
         }
 
         @Test
-        @DisplayName("should return 200 with empty list")
+        @DisplayName("should return 200 with an empty page")
         void shouldReturn200WithEmptyList() throws Exception {
-            when(listTasksUseCase.list(any())).thenReturn(List.of());
+            when(listTasksUseCase.list(any(), any()))
+                    .thenReturn(new PageResult<>(List.of(), 0, 20, 0, 0));
 
             mockMvc.perform(get("/api/tasks"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.length()").value(0));
+                    .andExpect(jsonPath("$.content.length()").value(0));
         }
 
         @Test
         @DisplayName("should return 200 when filtering by status and priority")
         void shouldReturn200WithFilters() throws Exception {
-            when(listTasksUseCase.list(any())).thenReturn(List.of(sampleResult(TaskStatus.TODO)));
+            when(listTasksUseCase.list(any(), any()))
+                    .thenReturn(new PageResult<>(List.of(sampleResult(TaskStatus.TODO)), 0, 20, 1, 1));
 
             mockMvc.perform(get("/api/tasks")
                             .param("status", "TODO")
                             .param("priority", "HIGH"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.length()").value(1));
+                    .andExpect(jsonPath("$.content.length()").value(1));
+        }
+
+        @Test
+        @DisplayName("should return 200 when passing page, size, sortBy and sortDirection")
+        void shouldReturn200WithPaginationParams() throws Exception {
+            when(listTasksUseCase.list(any(), any()))
+                    .thenReturn(new PageResult<>(List.of(sampleResult(TaskStatus.TODO)), 1, 5, 6, 2));
+
+            mockMvc.perform(get("/api/tasks")
+                            .param("page", "1")
+                            .param("size", "5")
+                            .param("sortBy", "TITLE")
+                            .param("sortDirection", "ASC"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.page").value(1))
+                    .andExpect(jsonPath("$.size").value(5))
+                    .andExpect(jsonPath("$.totalElements").value(6))
+                    .andExpect(jsonPath("$.totalPages").value(2));
+        }
+
+        @Test
+        @DisplayName("should return 400 when page is negative")
+        void shouldReturn400WhenPageIsNegative() throws Exception {
+            mockMvc.perform(get("/api/tasks").param("page", "-1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400));
+        }
+
+        @Test
+        @DisplayName("should return 400 when size exceeds the maximum")
+        void shouldReturn400WhenSizeExceedsMax() throws Exception {
+            mockMvc.perform(get("/api/tasks").param("size", "101"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400));
+        }
+
+        @Test
+        @DisplayName("should return 400 when sortBy is not a valid field")
+        void shouldReturn400WhenSortByIsInvalid() throws Exception {
+            mockMvc.perform(get("/api/tasks").param("sortBy", "NOT_A_FIELD"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400));
         }
     }
 
