@@ -43,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TaskController.class)
 @DisplayName("TaskController")
-class TaskControllerTest {
+class TaskControllerIT {
 
     private static final UUID TASK_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final LocalDate FIXED_DATE = LocalDate.of(2025, Month.JANUARY, 8);

@@ -105,6 +105,15 @@ The persistence contract is split across two layers:
 - Never call `LocalDate.now()` or `LocalDateTime.now()` in tests — use fixed constants instead
   (SonarLint: "Do not use the system clock in tests").
 - Domain entity tests live under `src/test/.../domain/task/model/` (see `TaskTest`).
+- Naming distinguishes unit tests from integration tests: plain unit tests (no Spring context)
+  use the `*Test` suffix (e.g. `UpdateTaskServiceTest`, `TaskTest`); tests that spin up a Spring
+  context use the `*IT` suffix (e.g. `TaskControllerIT`, `TaskRepositoryAdapterIT`). Both run via
+  `./mvnw test` — `pom.xml` widens Surefire's default includes to pick up `*IT.java` too, since
+  there's no separate Failsafe/`verify` phase in this project.
+- Whenever it's convenient — e.g. when adding or changing a web controller or a persistence
+  adapter — add or update the matching integration test alongside the unit tests: `@WebMvcTest`
+  for controllers (see `TaskControllerIT`), `@DataJpaTest` + Testcontainers for persistence
+  adapters (see `TaskRepositoryAdapterIT`).
 
 ## Stack
 

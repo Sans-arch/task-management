@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.flyway.enabled=false"
 })
 @DisplayName("TaskRepositoryAdapter")
-class TaskRepositoryAdapterTest {
+class TaskRepositoryAdapterIT {
 
     @Container
     @ServiceConnection
