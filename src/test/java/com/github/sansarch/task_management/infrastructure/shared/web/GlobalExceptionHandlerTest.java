@@ -12,8 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +62,29 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().status()).isEqualTo(400);
             assertThat(response.getBody().message()).isEqualTo("Task title must not be blank");
+        }
+    }
+
+    @Nested
+    @DisplayName("handleValidation()")
+    class HandleValidation {
+
+        @Test
+        @DisplayName("should return 400 with the joined field error messages")
+        void shouldReturn400() {
+            FieldError titleError = new FieldError("taskRequest", "title", "must not be blank");
+            FieldError priorityError = new FieldError("taskRequest", "priority", "must not be null");
+            BindingResult bindingResult = mock(BindingResult.class);
+            when(bindingResult.getFieldErrors()).thenReturn(List.of(titleError, priorityError));
+            MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
+            when(ex.getBindingResult()).thenReturn(bindingResult);
+
+            ResponseEntity<ErrorResponse> response = handler.handleValidation(ex);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().status()).isEqualTo(400);
+            assertThat(response.getBody().message()).isEqualTo("must not be blank, must not be null");
         }
     }
 
