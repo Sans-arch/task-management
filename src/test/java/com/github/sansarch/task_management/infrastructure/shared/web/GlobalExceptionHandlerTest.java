@@ -2,6 +2,9 @@ package com.github.sansarch.task_management.infrastructure.shared.web;
 
 import com.github.sansarch.task_management.domain.task.exception.InvalidTaskStateException;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
+import com.github.sansarch.task_management.domain.user.exception.DuplicateEmailException;
+import com.github.sansarch.task_management.domain.user.exception.InvalidUserStateException;
+import com.github.sansarch.task_management.domain.user.exception.UserNotFoundException;
 import com.github.sansarch.task_management.infrastructure.shared.web.response.ErrorResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -62,6 +65,60 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().status()).isEqualTo(400);
             assertThat(response.getBody().message()).isEqualTo("Task title must not be blank");
+        }
+    }
+
+    @Nested
+    @DisplayName("handleUserNotFound()")
+    class HandleUserNotFound {
+
+        @Test
+        @DisplayName("should return 404 with the exception message")
+        void shouldReturn404() {
+            UserNotFoundException ex = new UserNotFoundException("User not found: abc");
+
+            ResponseEntity<ErrorResponse> response = handler.handleUserNotFound(ex);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().status()).isEqualTo(404);
+            assertThat(response.getBody().message()).isEqualTo("User not found: abc");
+        }
+    }
+
+    @Nested
+    @DisplayName("handleDuplicateEmail()")
+    class HandleDuplicateEmail {
+
+        @Test
+        @DisplayName("should return 409 with the exception message")
+        void shouldReturn409() {
+            DuplicateEmailException ex = new DuplicateEmailException("Email already registered: jane@example.com");
+
+            ResponseEntity<ErrorResponse> response = handler.handleDuplicateEmail(ex);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().status()).isEqualTo(409);
+            assertThat(response.getBody().message()).isEqualTo("Email already registered: jane@example.com");
+        }
+    }
+
+    @Nested
+    @DisplayName("handleInvalidUserState()")
+    class HandleInvalidUserState {
+
+        @Test
+        @DisplayName("should return 400 with the exception message")
+        void shouldReturn400() {
+            InvalidUserStateException ex = new InvalidUserStateException("User email must not be blank");
+
+            ResponseEntity<ErrorResponse> response = handler.handleInvalidUserState(ex);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().status()).isEqualTo(400);
+            assertThat(response.getBody().message()).isEqualTo("User email must not be blank");
         }
     }
 

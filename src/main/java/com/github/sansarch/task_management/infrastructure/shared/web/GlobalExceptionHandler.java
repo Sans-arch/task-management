@@ -2,6 +2,9 @@ package com.github.sansarch.task_management.infrastructure.shared.web;
 
 import com.github.sansarch.task_management.domain.task.exception.InvalidTaskStateException;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
+import com.github.sansarch.task_management.domain.user.exception.DuplicateEmailException;
+import com.github.sansarch.task_management.domain.user.exception.InvalidUserStateException;
+import com.github.sansarch.task_management.domain.user.exception.UserNotFoundException;
 import com.github.sansarch.task_management.infrastructure.shared.web.response.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidTaskStateException.class)
     public ResponseEntity<ErrorResponse> handleInvalidTaskState(InvalidTaskStateException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmail(DuplicateEmailException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidUserStateException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidUserState(InvalidUserStateException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
     }
