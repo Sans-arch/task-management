@@ -4,11 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-Spring Boot 4.1 / Java 21 REST API for task management, built with Maven. The project is in early
-scaffolding: most classes exist as empty stubs (e.g. `CreateTaskUseCase`, `TaskController`,
-`TaskMapper`) awaiting implementation, while a few slices (`Task` domain model, `UpdateTaskUseCase`
-→ `UpdateTaskService`) are fully wired end-to-end. Use those wired slices as the reference pattern
-when filling in a stub.
+Spring Boot 4.1 / Java 21 REST API for task management, built with Maven. The API supports
+multiple users: tasks belong to an owner, users can organize into groups, and group members get
+full shared management (view/edit/delete) over each other's tasks. Authentication is a hand-rolled
+JWT mechanism (login issues a token, a servlet filter validates it) — deliberately simple for now;
+see "Security & auth conventions" below for how a future OAuth2 phase slots in without touching
+`domain`/`application`. Three business capabilities exist today — `task`, `user`, `group` — each
+following the same hexagonal layering; use any of them as the reference pattern when adding a new
+one.
 
 Note: the intended package name `com.github.sansarch.task-management` is not a valid Java
 identifier, so the codebase uses `com.github.sansarch.task_management` (underscore) instead.
@@ -34,8 +37,9 @@ Use the Maven wrapper (`./mvnw`), not a system-installed `mvn`.
 The codebase follows **hexagonal architecture (ports & adapters)**, applying **Clean
 Architecture**'s dependency rule (dependencies point inward, domain at the center) together with
 **Domain-Driven Design** tactical patterns (entities, value objects, domain exceptions) inside the
-`domain` layer. It's organized per business capability (currently just `task`). Each layer lives
-under its own top-level package and only depends inward:
+`domain` layer. It's organized per business capability (`task`, `user`, `group`, plus a thin `auth`
+capability with no domain layer of its own — see below). Each layer lives under its own top-level
+package and only depends inward:
 
 ```
 domain/task/
@@ -94,6 +98,44 @@ The persistence contract is split across two layers:
   never on a concrete persistence adapter.
 - Not-found lookups throw `TaskNotFoundException`.
 
+## Security & auth conventions
+
+- **`infrastructure/auth/`** is a top-level package (sibling to `infrastructure/task/`,
+  `infrastructure/user/`, `infrastructure/group/`) holding `SecurityConfig`, the JWT
+  service/filter, security entry points, and `AuthController`. It has no `domain/auth` layer —
+  `User` already owns the identity concept — so `application/auth` is deliberately thin
+  (`LoginUseCase` + `TokenIssuer` port only).
+- **Current-user access**: application services depend on
+  `application/shared/port/out/AuthenticatedUserProvider` (`UserId getCurrentUserId()`), never on
+  Spring Security types directly. It's implemented by
+  `infrastructure/auth/security/AuthenticatedUserProviderImpl`, which reads
+  `SecurityContextHolder` — the `JwtAuthenticationFilter` sets the principal to the `UserId` value
+  object itself (not a String), which is what makes the provider trivially type-safe. Controllers
+  never touch this port directly; only application services do.
+- **Password hashing** is its own port, `application/user/port/out/PasswordHasher`, implemented by
+  `infrastructure/user/adapter/out/security/BCryptPasswordHasher` wrapping a Spring
+  `PasswordEncoder` bean — keeps `application/user` framework-agnostic rather than injecting
+  `PasswordEncoder` straight into a service.
+- **`TaskAuthorizationService`** (`application/task/security/`) is a documented deviation from
+  "one service per use-case interface": it's a plain `@Service` collaborator, not a `port/in`
+  implementation, shared by `UpdateTaskService`, `DeleteTaskService`, `MarkTaskInProgressService`,
+  `CompleteTaskService`, and `ListTasksService` to avoid duplicating the "can this caller manage
+  this task" check five times. `manageableOwnerIds()` returns the current user plus their group
+  co-members (via `GroupMembershipGateway.findCoMemberIds`); `assertCanManage(Task)` throws
+  `TaskAccessDeniedException` (403) otherwise. When adding a new task use case, inject this
+  service and call `assertCanManage` right after the `findById(...).orElseThrow(...)` lookup.
+- **Never trust a client-supplied owner/user id.** `CreateTaskCommand` has no `ownerId` field —
+  `CreateTaskService` stamps it from `AuthenticatedUserProvider`. Apply the same rule to any future
+  command that would otherwise let a client impersonate another user.
+- **Login timing/enumeration**: `LoginService` must throw the *identical* exception and message
+  (`InvalidCredentialsException("Invalid email or password")`) whether the email is unknown or the
+  password is wrong — never let the two failure branches diverge.
+- **OAuth2 slot-in note**: because `AuthenticatedUserProvider` is the only thing application
+  services depend on for "who is calling," and the filter chain lives in one `SecurityConfig`
+  class, a future phase can add (or swap in) a `spring-boot-starter-oauth2-resource-server` filter
+  chain without touching `domain`, `application`, or any `task`/`user`/`group` controller — only
+  `infrastructure/auth` changes. This is deliberately not built yet.
+
 ## Testing conventions
 
 - Every use case service (`application/task/service/`) must have a corresponding unit test class
@@ -117,8 +159,12 @@ The persistence contract is split across two layers:
 
 ## Stack
 
-- Spring Boot starters: `data-jpa`, `validation`, `webmvc` (+ matching `-test` starters for
-  Boot's test slices), plus `devtools` and the `postgresql` runtime driver.
+- Spring Boot starters: `data-jpa`, `validation`, `webmvc`, `security` (+ matching `-test` starters
+  for Boot's test slices, plus plain `spring-security-test`), `devtools`, and the `postgresql`
+  runtime driver.
+- JWT: `jjwt-api`/`jjwt-impl`/`jjwt-gson` — `jjwt-gson`, not `jjwt-jackson`, deliberately, since
+  this codebase runs Jackson 3 (`tools.jackson.*`) and `jjwt-jackson` targets classic
+  `com.fasterxml.jackson`.
 - No `pom.xml` changes to the parent POM's empty `<license>`/`<developers>`/etc. overrides —
   these are intentional (see `HELP.md`) to prevent inheriting unwanted values from
   `spring-boot-starter-parent`.
