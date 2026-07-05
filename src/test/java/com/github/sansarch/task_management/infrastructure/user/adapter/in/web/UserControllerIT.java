@@ -2,6 +2,7 @@ package com.github.sansarch.task_management.infrastructure.user.adapter.in.web;
 
 import tools.jackson.databind.ObjectMapper;
 import com.github.sansarch.task_management.application.user.dto.UserResult;
+import com.github.sansarch.task_management.application.user.port.in.GetCurrentUserUseCase;
 import com.github.sansarch.task_management.application.user.port.in.RegisterUserUseCase;
 import com.github.sansarch.task_management.domain.user.exception.DuplicateEmailException;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,6 +42,9 @@ class UserControllerIT {
 
     @MockitoBean
     private RegisterUserUseCase registerUserUseCase;
+
+    @MockitoBean
+    private GetCurrentUserUseCase getCurrentUserUseCase;
 
     @Nested
     @DisplayName("POST /api/users")
@@ -121,6 +126,25 @@ class UserControllerIT {
                             ))))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.status").value(409));
+        }
+    }
+
+    // 401-when-unauthenticated is proven end-to-end in AuthenticationFlowIT: this @WebMvcTest
+    // mocks the use case directly, so it never exercises the actual security filter chain.
+    @Nested
+    @DisplayName("GET /api/users/me")
+    class Me {
+
+        @Test
+        @DisplayName("should return 200 with the current user")
+        void shouldReturn200() throws Exception {
+            when(getCurrentUserUseCase.getCurrentUser())
+                    .thenReturn(new UserResult(USER_ID, "jane@example.com", "Jane Doe", FIXED_DATETIME, FIXED_DATETIME));
+
+            mockMvc.perform(get("/api/users/me"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(USER_ID.toString()))
+                    .andExpect(jsonPath("$.email").value("jane@example.com"));
         }
     }
 }

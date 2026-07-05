@@ -11,3 +11,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:dev-only-secret-change-me-please-32-bytes-min}
+      expiration-minutes: 60
