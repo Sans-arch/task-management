@@ -1,6 +1,7 @@
 package com.github.sansarch.task_management.infrastructure.shared.web;
 
 import com.github.sansarch.task_management.domain.task.exception.InvalidTaskStateException;
+import com.github.sansarch.task_management.domain.task.exception.TaskAccessDeniedException;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
 import com.github.sansarch.task_management.domain.user.exception.DuplicateEmailException;
 import com.github.sansarch.task_management.domain.user.exception.InvalidUserStateException;
@@ -65,6 +66,24 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().status()).isEqualTo(400);
             assertThat(response.getBody().message()).isEqualTo("Task title must not be blank");
+        }
+    }
+
+    @Nested
+    @DisplayName("handleTaskAccessDenied()")
+    class HandleTaskAccessDenied {
+
+        @Test
+        @DisplayName("should return 403 with the exception message")
+        void shouldReturn403() {
+            TaskAccessDeniedException ex = new TaskAccessDeniedException("User cannot manage task abc");
+
+            ResponseEntity<ErrorResponse> response = handler.handleTaskAccessDenied(ex);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().status()).isEqualTo(403);
+            assertThat(response.getBody().message()).isEqualTo("User cannot manage task abc");
         }
     }
 

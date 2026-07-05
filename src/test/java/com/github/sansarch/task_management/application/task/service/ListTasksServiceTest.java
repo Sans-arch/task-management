@@ -7,10 +7,12 @@ import com.github.sansarch.task_management.application.task.dto.TaskPageRequest;
 import com.github.sansarch.task_management.application.task.dto.TaskResult;
 import com.github.sansarch.task_management.application.task.dto.TaskSortField;
 import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
+import com.github.sansarch.task_management.application.task.security.TaskAuthorizationService;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
 import com.github.sansarch.task_management.domain.task.model.TaskPriority;
 import com.github.sansarch.task_management.domain.task.model.TaskStatus;
+import com.github.sansarch.task_management.domain.user.model.UserId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -33,9 +37,14 @@ class ListTasksServiceTest {
 
     private static final LocalDateTime FIXED_DATETIME = LocalDateTime.of(2025, Month.JANUARY, 1, 10, 0, 0);
     private static final TaskPageRequest DEFAULT_PAGE_REQUEST = new TaskPageRequest(0, 20, TaskSortField.CREATED_AT, SortDirection.DESC);
+    private static final UserId OWNER_ID = new UserId(UUID.fromString("00000000-0000-0000-0000-0000000000aa"));
+    private static final Set<UserId> VISIBLE_OWNER_IDS = Set.of(OWNER_ID);
 
     @Mock
     private TaskGateway taskDomainRepository;
+
+    @Mock
+    private TaskAuthorizationService taskAuthorizationService;
 
     @InjectMocks
     private ListTasksService listTasksService;
@@ -48,9 +57,10 @@ class ListTasksServiceTest {
         @DisplayName("should return a TaskResult for each task returned by the repository")
         void shouldReturnTaskResultsForEachTask() {
             TaskFilter filter = new TaskFilter(null, null);
-            Task task1 = Task.reconstitute(TaskId.generate(), "Task 1", null, TaskStatus.TODO, TaskPriority.LOW, null, FIXED_DATETIME, FIXED_DATETIME);
-            Task task2 = Task.reconstitute(TaskId.generate(), "Task 2", null, TaskStatus.IN_PROGRESS, TaskPriority.HIGH, null, FIXED_DATETIME, FIXED_DATETIME);
-            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST))
+            Task task1 = Task.reconstitute(TaskId.generate(), OWNER_ID, "Task 1", null, TaskStatus.TODO, TaskPriority.LOW, null, FIXED_DATETIME, FIXED_DATETIME);
+            Task task2 = Task.reconstitute(TaskId.generate(), OWNER_ID, "Task 2", null, TaskStatus.IN_PROGRESS, TaskPriority.HIGH, null, FIXED_DATETIME, FIXED_DATETIME);
+            when(taskAuthorizationService.manageableOwnerIds()).thenReturn(VISIBLE_OWNER_IDS);
+            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST, VISIBLE_OWNER_IDS))
                     .thenReturn(new PageResult<>(List.of(task1, task2), 0, 20, 2, 1));
 
             List<TaskResult> results = listTasksService.list(filter, DEFAULT_PAGE_REQUEST).content();
@@ -64,7 +74,8 @@ class ListTasksServiceTest {
         @DisplayName("should return an empty page when no tasks match the filter")
         void shouldReturnEmptyPageWhenNoTasksFound() {
             TaskFilter filter = new TaskFilter(TaskStatus.DONE, null);
-            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST))
+            when(taskAuthorizationService.manageableOwnerIds()).thenReturn(VISIBLE_OWNER_IDS);
+            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST, VISIBLE_OWNER_IDS))
                     .thenReturn(new PageResult<>(List.of(), 0, 20, 0, 0));
 
             PageResult<TaskResult> result = listTasksService.list(filter, DEFAULT_PAGE_REQUEST);
@@ -79,13 +90,15 @@ class ListTasksServiceTest {
         void shouldMapAllTaskResultFieldsCorrectly() {
             TaskFilter filter = new TaskFilter(null, null);
             TaskId id = TaskId.generate();
-            Task task = Task.reconstitute(id, "Fix bug", "Desc", TaskStatus.TODO, TaskPriority.MEDIUM, null, FIXED_DATETIME, FIXED_DATETIME);
-            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST))
+            Task task = Task.reconstitute(id, OWNER_ID, "Fix bug", "Desc", TaskStatus.TODO, TaskPriority.MEDIUM, null, FIXED_DATETIME, FIXED_DATETIME);
+            when(taskAuthorizationService.manageableOwnerIds()).thenReturn(VISIBLE_OWNER_IDS);
+            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST, VISIBLE_OWNER_IDS))
                     .thenReturn(new PageResult<>(List.of(task), 0, 20, 1, 1));
 
             TaskResult result = listTasksService.list(filter, DEFAULT_PAGE_REQUEST).content().get(0);
 
             assertThat(result.id()).isEqualTo(id.id());
+            assertThat(result.ownerId()).isEqualTo(OWNER_ID.id());
             assertThat(result.title()).isEqualTo("Fix bug");
             assertThat(result.description()).isEqualTo("Desc");
             assertThat(result.status()).isEqualTo(TaskStatus.TODO);
@@ -99,8 +112,9 @@ class ListTasksServiceTest {
         void shouldPreservePaginationMetadata() {
             TaskFilter filter = new TaskFilter(null, null);
             TaskPageRequest pageRequest = new TaskPageRequest(1, 10, TaskSortField.TITLE, SortDirection.ASC);
-            Task task = Task.reconstitute(TaskId.generate(), "Task", null, TaskStatus.TODO, TaskPriority.LOW, null, FIXED_DATETIME, FIXED_DATETIME);
-            when(taskDomainRepository.findAll(filter, pageRequest))
+            Task task = Task.reconstitute(TaskId.generate(), OWNER_ID, "Task", null, TaskStatus.TODO, TaskPriority.LOW, null, FIXED_DATETIME, FIXED_DATETIME);
+            when(taskAuthorizationService.manageableOwnerIds()).thenReturn(VISIBLE_OWNER_IDS);
+            when(taskDomainRepository.findAll(filter, pageRequest, VISIBLE_OWNER_IDS))
                     .thenReturn(new PageResult<>(List.of(task), 1, 10, 25, 3));
 
             PageResult<TaskResult> result = listTasksService.list(filter, pageRequest);
@@ -112,15 +126,16 @@ class ListTasksServiceTest {
         }
 
         @Test
-        @DisplayName("should pass the filter and page request to the repository")
+        @DisplayName("should pass the filter, page request, and visible owner ids to the repository")
         void shouldPassFilterAndPageRequestToRepository() {
             TaskFilter filter = new TaskFilter(TaskStatus.TODO, TaskPriority.HIGH);
-            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST))
+            when(taskAuthorizationService.manageableOwnerIds()).thenReturn(VISIBLE_OWNER_IDS);
+            when(taskDomainRepository.findAll(filter, DEFAULT_PAGE_REQUEST, VISIBLE_OWNER_IDS))
                     .thenReturn(new PageResult<>(List.of(), 0, 20, 0, 0));
 
             listTasksService.list(filter, DEFAULT_PAGE_REQUEST);
 
-            verify(taskDomainRepository).findAll(filter, DEFAULT_PAGE_REQUEST);
+            verify(taskDomainRepository).findAll(filter, DEFAULT_PAGE_REQUEST, VISIBLE_OWNER_IDS);
         }
     }
 }

@@ -30,7 +30,6 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(jwtService);
     }
 
-    // TODO(Milestone 3): remove the /api/tasks/** permit-all once task ownership exists.
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter,
                                                     JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
@@ -42,7 +41,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/tasks/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)

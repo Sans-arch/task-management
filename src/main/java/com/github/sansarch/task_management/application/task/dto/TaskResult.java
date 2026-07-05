@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public record TaskResult(
         UUID id,
+        UUID ownerId,
         String title,
         String description,
         TaskStatus status,

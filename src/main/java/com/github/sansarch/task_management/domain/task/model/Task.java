@@ -1,6 +1,7 @@
 package com.github.sansarch.task_management.domain.task.model;
 
 import com.github.sansarch.task_management.domain.task.exception.InvalidTaskStateException;
+import com.github.sansarch.task_management.domain.user.model.UserId;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import static java.util.Objects.isNull;
 public class Task {
 
     private final TaskId id;
+    private final UserId ownerId;
     private String title;
     private String description;
     private TaskStatus status;
@@ -20,9 +22,10 @@ public class Task {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private Task(TaskId id, String title, String description, TaskStatus status, TaskPriority priority, LocalDate dueDate,
-                 LocalDateTime createdAt, LocalDateTime updatedAt) {
+    private Task(TaskId id, UserId ownerId, String title, String description, TaskStatus status, TaskPriority priority,
+                 LocalDate dueDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
+        this.ownerId = ownerId;
         this.title = title;
         this.description = description;
         this.status = status;
@@ -34,17 +37,19 @@ public class Task {
         this.validate();
     }
 
-    public static Task create(String title, String description, TaskStatus status, TaskPriority priority, LocalDate dueDate) {
+    public static Task create(UserId ownerId, String title, String description, TaskStatus status, TaskPriority priority,
+                              LocalDate dueDate) {
         LocalDateTime now = LocalDateTime.now();
-        return new Task(TaskId.generate(), title, description, status, priority, dueDate, now, now);
+        return new Task(TaskId.generate(), ownerId, title, description, status, priority, dueDate, now, now);
     }
 
-    public static Task reconstitute(TaskId id, String title, String description, TaskStatus status, TaskPriority priority,
-                                    LocalDate dueDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        return new Task(id, title, description, status, priority, dueDate, createdAt, updatedAt);
+    public static Task reconstitute(TaskId id, UserId ownerId, String title, String description, TaskStatus status,
+                                    TaskPriority priority, LocalDate dueDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        return new Task(id, ownerId, title, description, status, priority, dueDate, createdAt, updatedAt);
     }
 
     public TaskId getId() { return id; }
+    public UserId getOwnerId() { return ownerId; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public TaskStatus getStatus() { return status; }
@@ -93,6 +98,9 @@ public class Task {
     private void validate() {
         if (isNull(id)) {
             throw new InvalidTaskStateException("Task id must not be null");
+        }
+        if (isNull(ownerId)) {
+            throw new InvalidTaskStateException("Task ownerId must not be null");
         }
         if (isNull(title) || title.isBlank()) {
             throw new InvalidTaskStateException("Task title must not be blank");

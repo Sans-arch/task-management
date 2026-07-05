@@ -7,6 +7,7 @@ import com.github.sansarch.task_management.application.task.dto.TaskPageRequest;
 import com.github.sansarch.task_management.application.task.port.out.TaskGateway;
 import com.github.sansarch.task_management.domain.task.model.Task;
 import com.github.sansarch.task_management.domain.task.model.TaskId;
+import com.github.sansarch.task_management.domain.user.model.UserId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class TaskRepositoryAdapter implements TaskGateway {
@@ -32,11 +36,12 @@ public class TaskRepositoryAdapter implements TaskGateway {
     }
 
     @Override
-    public PageResult<Task> findAll(TaskFilter filter, TaskPageRequest pageRequest) {
+    public PageResult<Task> findAll(TaskFilter filter, TaskPageRequest pageRequest, Set<UserId> visibleOwnerIds) {
         Sort.Direction direction = pageRequest.sortDirection() == SortDirection.DESC ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(pageRequest.page(), pageRequest.size(), Sort.by(direction, pageRequest.sortBy().fieldName()));
 
-        Page<TaskJpaEntity> page = springDataTaskRepository.findByFilter(filter.status(), filter.priority(), pageable);
+        Set<UUID> ownerIds = visibleOwnerIds.stream().map(UserId::id).collect(Collectors.toSet());
+        Page<TaskJpaEntity> page = springDataTaskRepository.findByFilter(ownerIds, filter.status(), filter.priority(), pageable);
 
         return new PageResult<>(
                 page.getContent().stream().map(taskMapper::toDomain).toList(),

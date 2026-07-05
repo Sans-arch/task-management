@@ -15,6 +15,9 @@ public class TaskJpaEntity {
     @Id
     private UUID id;
 
+    @Column(name = "owner_id", nullable = false)
+    private UUID ownerId;
+
     @Column(nullable = false, length = 255)
     private String title;
 
@@ -40,9 +43,10 @@ public class TaskJpaEntity {
     protected TaskJpaEntity() {
     }
 
-    public TaskJpaEntity(UUID id, String title, String description, TaskStatus status, TaskPriority priority,
+    public TaskJpaEntity(UUID id, UUID ownerId, String title, String description, TaskStatus status, TaskPriority priority,
                          LocalDate dueDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
+        this.ownerId = ownerId;
         this.title = title;
         this.description = description;
         this.status = status;
@@ -53,6 +57,7 @@ public class TaskJpaEntity {
     }
 
     public UUID getId() { return id; }
+    public UUID getOwnerId() { return ownerId; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public TaskStatus getStatus() { return status; }

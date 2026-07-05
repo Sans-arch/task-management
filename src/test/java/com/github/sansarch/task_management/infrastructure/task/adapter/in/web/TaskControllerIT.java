@@ -17,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -41,11 +42,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// Security is proven end-to-end in AuthenticationFlowIT/TaskAccessIT; this test is only
+// about the web/JSON contract, so the real JWT filter chain is disabled here.
 @WebMvcTest(TaskController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @DisplayName("TaskController")
 class TaskControllerIT {
 
     private static final UUID TASK_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID OWNER_ID = UUID.fromString("00000000-0000-0000-0000-0000000000aa");
     private static final LocalDate FIXED_DATE = LocalDate.of(2025, Month.JANUARY, 8);
     private static final LocalDateTime FIXED_DATETIME = LocalDateTime.of(2025, Month.JANUARY, 1, 10, 0, 0);
 
@@ -74,7 +79,7 @@ class TaskControllerIT {
     private CompleteTaskUseCase completeTaskUseCase;
 
     private TaskResult sampleResult(TaskStatus status) {
-        return new TaskResult(TASK_ID, "Title", "Description", status, TaskPriority.HIGH, FIXED_DATE, FIXED_DATETIME, FIXED_DATETIME);
+        return new TaskResult(TASK_ID, OWNER_ID, "Title", "Description", status, TaskPriority.HIGH, FIXED_DATE, FIXED_DATETIME, FIXED_DATETIME);
     }
 
     @Nested

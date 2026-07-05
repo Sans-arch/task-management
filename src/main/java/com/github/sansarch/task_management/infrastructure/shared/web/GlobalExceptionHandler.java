@@ -1,6 +1,7 @@
 package com.github.sansarch.task_management.infrastructure.shared.web;
 
 import com.github.sansarch.task_management.domain.task.exception.InvalidTaskStateException;
+import com.github.sansarch.task_management.domain.task.exception.TaskAccessDeniedException;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
 import com.github.sansarch.task_management.domain.user.exception.DuplicateEmailException;
 import com.github.sansarch.task_management.domain.user.exception.InvalidCredentialsException;
@@ -32,6 +33,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidTaskState(InvalidTaskStateException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(TaskAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleTaskAccessDenied(TaskAccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(HttpStatus.FORBIDDEN.value(), ex.getMessage()));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
