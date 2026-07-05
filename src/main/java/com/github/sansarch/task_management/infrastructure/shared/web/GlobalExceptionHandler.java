@@ -1,5 +1,8 @@
 package com.github.sansarch.task_management.infrastructure.shared.web;
 
+import com.github.sansarch.task_management.domain.group.exception.GroupAccessDeniedException;
+import com.github.sansarch.task_management.domain.group.exception.GroupNotFoundException;
+import com.github.sansarch.task_management.domain.group.exception.InvalidGroupStateException;
 import com.github.sansarch.task_management.domain.task.exception.InvalidTaskStateException;
 import com.github.sansarch.task_management.domain.task.exception.TaskAccessDeniedException;
 import com.github.sansarch.task_management.domain.task.exception.TaskNotFoundException;
@@ -39,6 +42,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTaskAccessDenied(TaskAccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse(HttpStatus.FORBIDDEN.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(GroupNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleGroupNotFound(GroupNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(GroupAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleGroupAccessDenied(GroupAccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(HttpStatus.FORBIDDEN.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidGroupStateException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidGroupState(InvalidGroupStateException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
